@@ -1,0 +1,25 @@
+{
+    "name": "futchamp/php-orm",
+    "description": "A custom Object-Relational Mapping (ORM) library in PHP for managing football player data.",
+    "type": "library",
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "doctrine/annotations": "^1.13",
+        "doctrine/orm": "^2.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "FutChamp\\ORM\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "FutChamp\\ORM\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
