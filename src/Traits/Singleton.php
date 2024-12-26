@@ -1,5 +1,4 @@
 <?php
-
 trait Singleton
 {
     private static $instance = null;

@@ -14,8 +14,11 @@ class Database
 
     private function __construct()
     {
-        $this->connection = new \PDO("mysql:host={$this->host};dbname={$this->dbname}", $this->username, $this->password);
-        $this->connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        $this->connection = new \mysqli($this->host, $this->username, $this->password, $this->dbname);
+
+        if ($this->connection->connect_error) {
+            die("Connection failed: " . $this->connection->connect_error);
+        }
     }
 
     public static function getInstance()
