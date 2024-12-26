@@ -4,33 +4,30 @@ namespace Config;
 
 class Database
 {
-    private static $instance = null;
-    private $connection;
+  private static $instance = null;
+  private $connection;
 
-    private $host = 'localhost';
-    private $username = 'root';
-    private $password = '';
-    private $dbname = 'your_database_name';
+  private $host = 'localhost';
+  private $username = 'root';
+  private $password = '';
+  private $dbname = 'players';
 
-    private function __construct()
-    {
-        $this->connection = new \mysqli($this->host, $this->username, $this->password, $this->dbname);
+  private function __construct()
+  {
+    $this->connection = new \PDO("mysql:host={$this->host};dbname={$this->dbname}", $this->username, $this->password);
+    $this->connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+  }
 
-        if ($this->connection->connect_error) {
-            die("Connection failed: " . $this->connection->connect_error);
-        }
+  public static function getInstance()
+  {
+    if (self::$instance === null) {
+      self::$instance = new Database();
     }
+    return self::$instance;
+  }
 
-    public static function getInstance()
-    {
-        if (self::$instance === null) {
-            self::$instance = new Database();
-        }
-        return self::$instance;
-    }
-
-    public function getConnection()
-    {
-        return $this->connection;
-    }
+  public function getConnection()
+  {
+    return $this->connection;
+  }
 }
