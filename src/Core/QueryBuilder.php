@@ -1,17 +1,10 @@
 <?php
-
-namespace Core;
+namespace src\Core;
 
 class QueryBuilder
 {
-    protected $query;
     protected $table;
-
-    public function table($table)
-    {
-        $this->table = $table;
-        return $this;
-    }
+    protected $query;
 
     public function select($columns = '*')
     {
@@ -36,30 +29,24 @@ class QueryBuilder
         return $this;
     }
 
-    public function update(array $data)
+    public function update($id, array $data)
     {
-        $set = implode(', ', array_map(function ($key, $value) {
-            return "{$key} = '{$value}'";
-        }, array_keys($data), $data));
+        $sets = array_map(function($key) {
+            return "$key = ?";
+        }, array_keys($data));
 
-        $this->query = "UPDATE {$this->table} SET {$set}";
+        $this->query = "UPDATE {$this->table} SET " . implode(',', $sets) . " WHERE id = ?";
         return $this;
     }
 
-    public function delete()
+    public function delete($id)
     {
-        $this->query = "DELETE FROM {$this->table}";
+        $this->query = "DELETE FROM {$this->table} WHERE id = {$id}";
         return $this;
     }
 
     public function getQuery()
     {
         return $this->query;
-    }
-
-    public function execute()
-    {
-        // Here you would execute the query against the database
-        // This is a placeholder for actual database execution logic
     }
 }

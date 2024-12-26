@@ -1,7 +1,7 @@
 <?php
-namespace App\Crud\Operations;
+namespace src\Crud\Operations;
 
-trait Delete 
+trait Delete
 {
     public function delete($id)
     {

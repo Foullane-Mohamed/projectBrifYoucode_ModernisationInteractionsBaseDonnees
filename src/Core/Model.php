@@ -1,44 +1,34 @@
 <?php
 
-namespace Core;
+namespace src\Core;
 
-abstract class Model
+use src\Config\Database;
+use src\Crud\Operations\Create;
+use src\Crud\Operations\Read;
+use src\Crud\Operations\Update;
+use src\Crud\Operations\Delete;
+
+class Model
 {
-    protected $attributes = [];
-    protected $errors = [];
+  use Create, Read, Update, Delete;
 
-    public function __construct(array $data = [])
-    {
-        $this->fill($data);
-    }
+  protected $table;
+  protected $connection;
 
-    public function fill(array $data)
-    {
-        foreach ($data as $key => $value) {
-            if (property_exists($this, $key)) {
-                $this->attributes[$key] = $value;
-            }
-        }
-    }
+  public function __construct()
+  {
+    $this->connection = Database::getInstance()->getConnection();
+  }
 
-    public function get($key)
-    {
-        return $this->attributes[$key] ?? null;
-    }
+  protected function executeQuery($query, $params)
+  {
+    $stmt = $this->connection->prepare($query);
+    $stmt->execute($params);
+    return $stmt;
+  }
 
-    public function set($key, $value)
-    {
-        $this->attributes[$key] = $value;
-    }
-
-    public function validate()
-    {
-        // Implement validation logic here
-        return empty($this->errors);
-    }
-
-    public function getErrors()
-    {
-        return $this->errors;
-    }
+  protected function validateData(array $data)
+  {
+    // Implement your validation logic here
+  }
 }

@@ -1,33 +1,20 @@
 <?php
+class Database {
+    private $host = 'localhost';
+    private $db_name = 'your_database';
+    private $username = 'your_username';
+    private $password = 'your_password';
+    public $conn;
 
-namespace Config;
-
-class Database
-{
-  private static $instance = null;
-  private $connection;
-
-  private $host = 'localhost';
-  private $username = 'root';
-  private $password = '';
-  private $dbname = 'players';
-
-  private function __construct()
-  {
-    $this->connection = new \PDO("mysql:host={$this->host};dbname={$this->dbname}", $this->username, $this->password);
-    $this->connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-  }
-
-  public static function getInstance()
-  {
-    if (self::$instance === null) {
-      self::$instance = new Database();
+    public function getConnection() {
+        $this->conn = null;
+        try {
+            $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
+            $this->conn->exec("set names utf8");
+        } catch(PDOException $exception) {
+            echo "Connection error: " . $exception->getMessage();
+        }
+        return $this->conn;
     }
-    return self::$instance;
-  }
-
-  public function getConnection()
-  {
-    return $this->connection;
-  }
 }
+?>
