@@ -1,11 +1,11 @@
 <?php
 class Database {
-    private $mysqli;
+    private $pdo;
     private $config = [
         'host' => 'localhost',
+        'dbname' => 'players',
         'user' => 'root',
-        'pass' => '',
-        'name' => 'players'
+        'pass' => ''
     ];
 
     public function __construct() {
@@ -13,113 +13,96 @@ class Database {
     }
 
     private function connect() {
-        $this->mysqli = mysqli_connect(
-            $this->config['host'],
-            $this->config['user'],
-            $this->config['pass'],
-            $this->config['name']
-        );
-
-        if (!$this->mysqli) {
-            throw new Exception("Connection failed: " . mysqli_connect_error());
+        try {
+            $dsn = "mysql:host={$this->config['host']};dbname={$this->config['dbname']};charset=utf8mb4";
+            $this->pdo = new PDO($dsn, $this->config['user'], $this->config['pass'], [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+            ]);
+        } catch(PDOException $e) {
+            throw new Exception("Connection failed: " . $e->getMessage());
         }
-        mysqli_set_charset($this->mysqli, 'utf8mb4');
     }
 
     public function insertPlayer($data) {
         $sql = "INSERT INTO player (name, nationality, club, position, rating, player_id, 
                 shooting, pace, dribbling, defending, physical) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                
-        $stmt = $this->prepare($sql);
-        mysqli_stmt_bind_param($stmt, 'ssssiiiiiii',
-            $data['name'],
-            $data['nationality'],
-            $data['club'],
-            $data['position'],
-            $data['rating'],
-            $data['player_id'],
-            $data['shooting'],
-            $data['pace'],
-            $data['dribbling'],
-            $data['defending'],
-            $data['physical']
-        );
-        return $this->execute($stmt);
+                VALUES (:name, :nationality, :club, :position, :rating, :player_id, 
+                :shooting, :pace, :dribbling, :defending, :physical)";
+        
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $params = [
+                ':name' => $data['name'],
+                ':nationality' => $data['nationality'],
+                ':club' => $data['club'],
+                ':position' => $data['position'],
+                ':rating' => $data['rating'],
+                ':player_id' => $data['player_id'],
+                ':shooting' => $data['shooting'],
+                ':pace' => $data['pace'],
+                ':dribbling' => $data['dribbling'],
+                ':defending' => $data['defending'],
+                ':physical' => $data['physical']
+            ];
+            return $stmt->execute($params);
+        } catch(PDOException $e) {
+            throw new Exception("Insert failed: " . $e->getMessage());
+        }
     }
 
     public function updatePlayer($data, $id) {
-        $sql = "UPDATE player SET name=?, nationality=?, club=?, position=?, rating=?, 
-                player_id=?, shooting=?, pace=?, dribbling=?, defending=?, physical=? 
-                WHERE id=?";
-                
-        $stmt = $this->prepare($sql);
-        mysqli_stmt_bind_param($stmt, 'ssssiiiiiiii',
-            $data['name'],
-            $data['nationality'],
-            $data['club'],
-            $data['position'],
-            $data['rating'],
-            $data['player_id'],
-            $data['shooting'],
-            $data['pace'],
-            $data['dribbling'],
-            $data['defending'],
-            $data['physical'],
-            $id
-        );
-        return $this->execute($stmt);
+        $sql = "UPDATE player SET name=:name, nationality=:nationality, club=:club, 
+                position=:position, rating=:rating, player_id=:player_id, 
+                shooting=:shooting, pace=:pace, dribbling=:dribbling, 
+                defending=:defending, physical=:physical WHERE id=:id";
+        
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $params = [
+                ':name' => $data['name'],
+                ':nationality' => $data['nationality'],
+                ':club' => $data['club'],
+                ':position' => $data['position'],
+                ':rating' => $data['rating'],
+                ':player_id' => $data['player_id'],
+                ':shooting' => $data['shooting'],
+                ':pace' => $data['pace'],
+                ':dribbling' => $data['dribbling'],
+                ':defending' => $data['defending'],
+                ':physical' => $data['physical'],
+                ':id' => $id
+            ];
+            return $stmt->execute($params);
+        } catch(PDOException $e) {
+            throw new Exception("Update failed: " . $e->getMessage());
+        }
     }
 
     public function getPlayer($id) {
-        $sql = "SELECT * FROM player WHERE id = ?";
-        $stmt = $this->prepare($sql);
-        mysqli_stmt_bind_param($stmt, 'i', $id);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        mysqli_stmt_close($stmt);
-        return mysqli_fetch_assoc($result);
+        try {
+            $stmt = $this->pdo->prepare("SELECT * FROM player WHERE id = :id");
+            $stmt->execute(['id' => $id]);
+            return $stmt->fetch();
+        } catch(PDOException $e) {
+            throw new Exception("Select failed: " . $e->getMessage());
+        }
     }
 
     public function deletePlayer($id) {
-        $sql = "DELETE FROM player WHERE id = ?";
-        $stmt = $this->prepare($sql);
-        mysqli_stmt_bind_param($stmt, 'i', $id);
-        return $this->execute($stmt);
+        try {
+            $stmt = $this->pdo->prepare("DELETE FROM player WHERE id = :id");
+            return $stmt->execute(['id' => $id]);
+        } catch(PDOException $e) {
+            throw new Exception("Delete failed: " . $e->getMessage());
+        }
     }
 
     public function getAllPlayers() {
-        return $this->select("player");
-    }
-
-    private function select($table, $columns = "*", $where = null) {
-        $sql = "SELECT $columns FROM $table";
-        if ($where) $sql .= " WHERE $where";
-        
-        $stmt = $this->prepare($sql);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        mysqli_stmt_close($stmt);
-        return $result;
-    }
-
-    private function prepare($sql) {
-        $stmt = mysqli_prepare($this->mysqli, $sql);
-        if (!$stmt) {
-            throw new Exception("Prepare failed: " . mysqli_error($this->mysqli));
-        }
-        return $stmt;
-    }
-
-    private function execute($stmt) {
-        $result = mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        return $result;
-    }
-
-    public function __destruct() {
-        if ($this->mysqli) {
-            mysqli_close($this->mysqli);
+        try {
+            return $this->pdo->query("SELECT * FROM player")->fetchAll();
+        } catch(PDOException $e) {
+            throw new Exception("Select all failed: " . $e->getMessage());
         }
     }
 }
@@ -148,8 +131,6 @@ class PlayerManager {
     }
 
     public function getAllPlayers() {
-        $result = $this->db->getAllPlayers();
-        return mysqli_fetch_all($result, MYSQLI_ASSOC);
+        return $this->db->getAllPlayers();
     }
 }
-?>

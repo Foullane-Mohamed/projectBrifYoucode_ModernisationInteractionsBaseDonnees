@@ -1,6 +1,5 @@
 <?php
-require_once './src/models/Player.php';
-
+require './src/models/Player.php';
 $playerManager = new PlayerManager();
 $players = $playerManager->getAllPlayers();
 $message = '';
@@ -11,25 +10,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (isset($_POST['add'])) {
             $playerManager->addPlayer($_POST);
             $message = "Player added successfully";
-            header("Location: " . $_SERVER['PHP_SELF']);
-            exit;
+            header("Location: " . $_SERVER['PHP_SELF']); exit;
         }
         if (isset($_POST['update'])) {
             $playerManager->updatePlayer($_POST, $_POST['id']);
             $message = "Player updated successfully";
-            header("Location: " . $_SERVER['PHP_SELF']);
-            exit;
+            header("Location: " . $_SERVER['PHP_SELF']); exit;
         }
         if (isset($_POST['delete'])) {
             $playerManager->deletePlayer($_POST['id']);
             $message = "Player deleted successfully";
-            header("Location: " . $_SERVER['PHP_SELF']);
-            exit;
+            header("Location: " . $_SERVER['PHP_SELF']); exit;
         }
         if (isset($_POST['edit'])) {
             $editPlayer = $playerManager->getPlayer($_POST['id']);
         }
-    } catch(Exception $e) {
+    } catch(PDOException $e) {
         $message = "Error: " . $e->getMessage();
     }
 }
@@ -38,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Player Management</title>
+    <title>Players Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="container mt-4">
@@ -76,10 +72,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <select name="position" class="form-select" required>
                                 <option value="">Select Position</option>
                                 <?php
-                                $positions = ['GK' => 'Goalkeeper', 'CB' => 'Center Back', 'LB' => 'Left Back', 
-                                            'RB' => 'Right Back', 'CDM' => 'Defensive Midfielder', 
-                                            'CM' => 'Center Midfielder', 'LW' => 'Left Wing', 
-                                            'RW' => 'Right Wing', 'ST' => 'Striker'];
+                                $positions = [
+                                    'GK' => 'Goalkeeper', 'CB' => 'Center Back', 'LB' => 'Left Back', 
+                                    'RB' => 'Right Back', 'CDM' => 'Defensive Midfielder', 
+                                    'CM' => 'Center Midfielder', 'LW' => 'Left Wing', 
+                                    'RW' => 'Right Wing', 'ST' => 'Striker'
+                                ];
                                 foreach($positions as $value => $label):
                                     $selected = ($editPlayer && $editPlayer['position'] == $value) ? 'selected' : '';
                                 ?>
