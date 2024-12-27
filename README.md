@@ -4,7 +4,7 @@
 This project is a custom Object-Relational Mapping (ORM) solution implemented in PHP. It aims to simplify database interactions by automating CRUD operations and managing relationships between models. The ORM is designed to be flexible and easy to configure, making it suitable for various applications.
 ## Project Structure
 ```
-php-crud-app
+
 ├── src
 │   ├── config
 │   │   └── Database.php
